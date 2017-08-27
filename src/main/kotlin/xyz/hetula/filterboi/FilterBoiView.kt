@@ -25,7 +25,6 @@
 package xyz.hetula.filterboi
 
 import javafx.application.Platform
-import javafx.event.ActionEvent
 import javafx.fxml.FXML
 import javafx.fxml.Initializable
 import javafx.scene.control.*
@@ -70,17 +69,17 @@ class FilterBoiView : Initializable, FilterBoiContract.View {
         internal set
 
     @FXML
-    private fun onNotMatchingClick(event: ActionEvent) {
+    private fun onNotMatchingClick() {
         filter(txtFilter?.text!!)
     }
 
     @FXML
-    private fun onRegexClick(event: ActionEvent) {
+    private fun onRegexClick() {
         filter(txtFilter?.text!!)
     }
 
     @FXML
-    private fun onImportClick(event: ActionEvent) {
+    private fun onImportClick() {
         val f = selChooser?.showOpenDialog(window?.getPrimaryStage()) ?: return
         presenter?.importLog(f.toPath())
     }
