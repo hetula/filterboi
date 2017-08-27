@@ -60,6 +60,7 @@ class FilterBoiView : Initializable, FilterBoiContract.View {
     @FXML
     private var lblSearchTime: Label? = null
 
+    private var lineHeight: Double = 0.0
     private var selChooser: FileChooser? = null
 
     var presenter: FilterBoiContract.Presenter? = null
@@ -99,6 +100,8 @@ class FilterBoiView : Initializable, FilterBoiContract.View {
         Platform.runLater {
             val logScroller = logArea?.lookup(".scroll-bar:vertical")
             logScroller?.isDisable = true
+            val font = logArea?.font
+            lineHeight = Utils.computeTextHeight(font!!, "|", 123.0)
         }
     }
 
@@ -138,7 +141,7 @@ class FilterBoiView : Initializable, FilterBoiContract.View {
     }
 
     override fun getVisibleRowCount(): Int {
-        return 40
+        return (logArea!!.height / lineHeight).toInt()
     }
 
     private fun filter(filterText: String) {
