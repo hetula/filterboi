@@ -24,46 +24,34 @@
 
 package xyz.hetula.filterboi
 
-import javafx.application.Application
-import javafx.fxml.FXMLLoader
-import javafx.scene.Scene
-import javafx.scene.layout.BorderPane
 import javafx.stage.Stage
+import java.nio.file.Path
 
 /**
  * @author Tuomo Heino
- * @version 23.8.2017.
+ * @version 27.8.2017.
  */
-class FilterBoiFx : Application() {
-
-    override fun start(primaryStage: Stage?) {
-        primaryStage!!
-
-        val fxmlLoader = FXMLLoader()
-        val root = fxmlLoader.load<BorderPane>(javaClass.getResourceAsStream("/boi_gui.fxml"))
-        val controller = fxmlLoader.getController<FilterBoiView>()
-        val window = createWindow(primaryStage)
-
-        controller.window = window
-        controller.presenter = FilterBoiPresenter(controller, window)
-
-        val scene = Scene(root, 1024.0, 768.0)
-        scene.stylesheets.add(javaClass.getResource("/boi.css").toExternalForm())
-
-        primaryStage.scene = scene
-        primaryStage.show()
+interface FilterBoiContract {
+    interface Window {
+        fun setTitle(title: String)
+        fun getPrimaryStage(): Stage
     }
 
-    private fun createWindow(stage: Stage): FilterBoiContract.Window {
-        return object : FilterBoiContract.Window {
-            override fun setTitle(title: String) {
-                stage.title = title
-            }
-
-            override fun getPrimaryStage(): Stage {
-                return stage
-            }
-        }
+    interface View {
+        fun showScrollBar(show: Boolean)
+        fun setScrollBar(max: Int)
+        fun resetScrollBar()
+        fun clearText()
+        fun appendText(line: String)
+        fun setLines(lines: Int)
+        fun setSearchTook(ms: Long)
+        fun getVisibleRowCount(): Int
     }
 
+    interface Presenter {
+        fun doSearch(filter: Filter)
+        fun setContent(fromIndex: Int)
+        fun importLog(file: Path)
+        fun getCurrentLines(): Int
+    }
 }

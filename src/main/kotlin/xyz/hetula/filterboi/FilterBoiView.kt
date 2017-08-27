@@ -24,12 +24,124 @@
 
 package xyz.hetula.filterboi
 
+import javafx.application.Platform
+import javafx.event.ActionEvent
+import javafx.fxml.FXML
+import javafx.fxml.Initializable
+import javafx.scene.control.*
+import javafx.stage.FileChooser
+import java.io.File
+import java.net.URL
+import java.util.*
+
 /**
  * @author Tuomo Heino
- * @version 23.8.2017.
+ * @version 27.8.2017.
  */
-interface FilterBoiView {
-    fun appendText(line: String)
-    fun clearText()
-    fun setToolbarText(string: String)
+class FilterBoiView : Initializable, FilterBoiContract.View {
+    @FXML
+    private var txtFilter: TextField? = null
+
+    @FXML
+    private var chkNotMatching: CheckBox? = null
+
+    @FXML
+    private var chkRegex: CheckBox? = null
+
+    @FXML
+    private var logArea: TextArea? = null
+
+    @FXML
+    private var logScrollBar: ScrollBar? = null
+
+    @FXML
+    private var lblLines: Label? = null
+
+    @FXML
+    private var lblSearchTime: Label? = null
+
+    private var selChooser: FileChooser? = null
+
+    var presenter: FilterBoiContract.Presenter? = null
+        internal set
+
+    var window: FilterBoiContract.Window? = null
+        internal set
+
+    @FXML
+    private fun onNotMatchingClick(event: ActionEvent) {
+        filter(txtFilter?.text!!)
+    }
+
+    @FXML
+    private fun onRegexClick(event: ActionEvent) {
+        filter(txtFilter?.text!!)
+    }
+
+    @FXML
+    private fun onImportClick(event: ActionEvent) {
+        val f = selChooser?.showOpenDialog(window?.getPrimaryStage()) ?: return
+        presenter?.importLog(f.toPath())
+    }
+
+    override fun initialize(location: URL?, resources: ResourceBundle?) {
+        selChooser = FileChooser()
+        selChooser?.title = "Select log file"
+        selChooser?.initialDirectory = File(System.getProperty("user.home"))
+
+        logScrollBar?.valueProperty()?.addListener { _, _, line ->
+            presenter?.setContent(line.toInt())
+        }
+
+        txtFilter?.textProperty()?.addListener { _, _, text -> filter(text) }
+
+        // Run after initial setup to gather some data
+        Platform.runLater {
+            val logScroller = logArea?.lookup(".scroll-bar:vertical")
+            logScroller?.isDisable = true
+        }
+    }
+
+    override fun showScrollBar(show: Boolean) {
+        logScrollBar?.isVisible = show
+    }
+
+    override fun setScrollBar(max: Int) {
+        logScrollBar?.min = 0.0
+        logScrollBar?.unitIncrement = 1.0
+        logScrollBar?.blockIncrement = (max / 25).toDouble()
+        logScrollBar?.max = max.toDouble()
+    }
+
+    override fun resetScrollBar() {
+        logScrollBar?.value = 0.0
+    }
+
+    override fun clearText() {
+        logArea?.clear()
+    }
+
+    override fun appendText(line: String) {
+        if (logArea?.text!!.isNotEmpty()) {
+            logArea?.appendText(System.lineSeparator())
+        }
+        logArea?.appendText(line)
+        logArea?.positionCaret(0)
+    }
+
+    override fun setLines(lines: Int) {
+        lblLines?.text = "Lines: $lines"
+    }
+
+    override fun setSearchTook(ms: Long) {
+        lblSearchTime?.text = "Searh took: $ms ms"
+    }
+
+    override fun getVisibleRowCount(): Int {
+        return 40
+    }
+
+    private fun filter(filterText: String) {
+        presenter?.doSearch(Filter(filterText, chkNotMatching!!.isSelected, chkRegex!!.isSelected))
+    }
 }

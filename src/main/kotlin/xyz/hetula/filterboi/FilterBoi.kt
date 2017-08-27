@@ -40,23 +40,31 @@ object FilterBoi {
     private val curFilteredContent: MutableList<String> = ArrayList()
 
     private var filter: Filter = Filter("")
-    private var lastSearchDur = ""
 
-    fun setText(view: FilterBoiView) {
-        view.clearText()
-        curFilteredContent.forEach { view.appendText(it + System.lineSeparator()) }
-        view.setToolbarText(lastSearchDur)
+    internal var lastSearchDur = 0L
+        private set
+
+    fun queryText(fromIndex: Int, length: Int, consumer: (line: String) -> Unit) {
+        if (fromIndex >= curFilteredContent.size) {
+            return
+        }
+        curFilteredContent.stream()
+                .skip(fromIndex.toLong())
+                .limit(length.toLong())
+                .forEach { consumer(it) }
     }
 
-    fun loadFile(file: Path, view: FilterBoiView) {
+    fun loadFile(file: Path, callback: () -> Unit) {
         taskQueue.submit {
+            println("Reading Contents!")
             originalContent.clear()
             curFilteredContent.clear()
             originalContent.addAll(Files.readAllLines(file))
+            println("Found ${originalContent.size} lines in log!")
             curFilteredContent.addAll(originalContent)
             doFiltering(filter, curFilteredContent)
             Platform.runLater {
-                setText(view)
+                callback()
             }
         }
     }
@@ -72,7 +80,11 @@ object FilterBoi {
         }
     }
 
-    fun filter(value: Filter, view: FilterBoiView) {
+    fun getCurrentLines(): Int {
+        return curFilteredContent.size
+    }
+
+    fun filter(value: Filter, callback: () -> Unit) {
         taskQueue.submit({
 
             if (filter == value) {
@@ -88,7 +100,7 @@ object FilterBoi {
             }
 
             Platform.runLater {
-                setText(view)
+                callback()
             }
         })
     }
@@ -119,7 +131,7 @@ object FilterBoi {
                 }
             }
         }
-        lastSearchDur = "Searched in: ${System.currentTimeMillis() - start} ms"
+        lastSearchDur = System.currentTimeMillis() - start
     }
 
     private fun getList(newFilter: Filter): MutableList<String> {

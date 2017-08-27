@@ -24,46 +24,54 @@
 
 package xyz.hetula.filterboi
 
-import javafx.application.Application
-import javafx.fxml.FXMLLoader
-import javafx.scene.Scene
-import javafx.scene.layout.BorderPane
-import javafx.stage.Stage
+import java.nio.file.Path
 
 /**
  * @author Tuomo Heino
- * @version 23.8.2017.
+ * @version 27.8.2017.
  */
-class FilterBoiFx : Application() {
+class FilterBoiPresenter(private val view: FilterBoiContract.View,
+                         private val window: FilterBoiContract.Window) : FilterBoiContract.Presenter {
+    private val title = "Filter Boi"
 
-    override fun start(primaryStage: Stage?) {
-        primaryStage!!
-
-        val fxmlLoader = FXMLLoader()
-        val root = fxmlLoader.load<BorderPane>(javaClass.getResourceAsStream("/boi_gui.fxml"))
-        val controller = fxmlLoader.getController<FilterBoiView>()
-        val window = createWindow(primaryStage)
-
-        controller.window = window
-        controller.presenter = FilterBoiPresenter(controller, window)
-
-        val scene = Scene(root, 1024.0, 768.0)
-        scene.stylesheets.add(javaClass.getResource("/boi.css").toExternalForm())
-
-        primaryStage.scene = scene
-        primaryStage.show()
+    init {
+        window.setTitle(title)
     }
 
-    private fun createWindow(stage: Stage): FilterBoiContract.Window {
-        return object : FilterBoiContract.Window {
-            override fun setTitle(title: String) {
-                stage.title = title
-            }
+    override fun setContent(fromIndex: Int) {
+        view.clearText()
+        val rows = view.getVisibleRowCount()
+        FilterBoi.queryText(fromIndex, rows) {
+            view.appendText(it)
+        }
+        view.showScrollBar(getCurrentLines() > rows)
+    }
 
-            override fun getPrimaryStage(): Stage {
-                return stage
-            }
+    override fun importLog(file: Path) {
+        FilterBoi.loadFile(file) {
+            window.setTitle("${file.toAbsolutePath()} - $title")
+            setViewInfo()
+            setContent(0)
         }
     }
 
+    override fun getCurrentLines(): Int {
+        return FilterBoi.getCurrentLines()
+    }
+
+    override fun doSearch(filter: Filter) {
+        FilterBoi.filter(filter) {
+            setViewInfo()
+            setContent(0)
+
+        }
+    }
+
+    private fun setViewInfo() {
+        val lines = FilterBoi.getCurrentLines()
+        view.setLines(lines)
+        view.setSearchTook(FilterBoi.lastSearchDur)
+        view.resetScrollBar()
+        view.setScrollBar(lines)
+    }
 }
