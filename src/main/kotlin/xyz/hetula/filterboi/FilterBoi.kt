@@ -25,6 +25,7 @@
 package xyz.hetula.filterboi
 
 import javafx.application.Platform
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.Executors
@@ -59,11 +60,15 @@ object FilterBoi {
             println("Reading Contents!")
             originalContent.clear()
             curFilteredContent.clear()
-            originalContent.addAll(Files.readAllLines(file))
+            readLines(file) {
+                originalContent.add(it)
+                println("Lines ${originalContent.size}")
+            }
             println("Found ${originalContent.size} lines in log!")
             curFilteredContent.addAll(originalContent)
             doFiltering(filter, curFilteredContent)
             Platform.runLater {
+
                 callback()
             }
         }
@@ -103,6 +108,22 @@ object FilterBoi {
                 callback()
             }
         })
+    }
+
+    private fun readLines(file: Path, consumer: (String) -> Unit) {
+        if (!Files.exists(file)) {
+            println("Path ${file.toAbsolutePath()} doesn't exist!")
+            return
+        }
+        println("Reading contents of ${file.toAbsolutePath()}")
+        val reader = Files.newBufferedReader(file)
+        try {
+            reader.lines().forEach { consumer(it) }
+        } catch (ex: IOException) {
+            ex.printStackTrace()
+        } finally {
+            reader.close()
+        }
     }
 
     private fun filterList(value: Filter) {
