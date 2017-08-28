@@ -24,6 +24,7 @@
 
 package xyz.hetula.filterboi
 
+import javafx.application.Platform
 import java.nio.file.Path
 
 /**
@@ -63,7 +64,12 @@ class FilterBoiPresenter(private val view: FilterBoiContract.View,
         FilterBoi.filter(filter) {
             setViewInfo()
             setContent(0)
+        }
+    }
 
+    override fun onResize() {
+        Platform.runLater {
+            view.refreshView()
         }
     }
 

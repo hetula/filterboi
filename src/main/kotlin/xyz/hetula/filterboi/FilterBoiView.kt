@@ -95,12 +95,15 @@ class FilterBoiView : Initializable, FilterBoiContract.View {
 
         txtFilter?.textProperty()?.addListener { _, _, text -> filter(text) }
 
+        logArea?.heightProperty()?.addListener { _, _, _ -> presenter?.onResize() }
+        logArea?.widthProperty()?.addListener { _, _, _ -> presenter?.onResize() }
+
         // Run after initial setup to gather some data
         Platform.runLater {
             val logScroller = logArea?.lookup(".scroll-bar:vertical")
             logScroller?.isDisable = true
             val font = logArea?.font
-            lineHeight = Utils.computeTextHeight(font!!, "|", 123.0)
+            lineHeight = Utils.computeTextHeight(font!!, "|", 123.0) + 1
         }
     }
 
@@ -112,7 +115,7 @@ class FilterBoiView : Initializable, FilterBoiContract.View {
         logScrollBar?.min = 0.0
         logScrollBar?.unitIncrement = 1.0
         logScrollBar?.blockIncrement = (max / 25).toDouble()
-        logScrollBar?.max = max.toDouble()
+        logScrollBar?.max = Math.max(max - getVisibleRowCount() + 5, 0).toDouble()
     }
 
     override fun resetScrollBar() {
@@ -141,6 +144,13 @@ class FilterBoiView : Initializable, FilterBoiContract.View {
 
     override fun getVisibleRowCount(): Int {
         return (logArea!!.height / lineHeight).toInt()
+    }
+
+    override fun refreshView() {
+        val line = logScrollBar?.value
+        if (line != null) {
+            presenter?.setContent(line.toInt())
+        }
     }
 
     private fun filter(filterText: String) {

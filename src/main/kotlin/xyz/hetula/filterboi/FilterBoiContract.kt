@@ -46,6 +46,7 @@ interface FilterBoiContract {
         fun setLines(lines: Int)
         fun setSearchTook(ms: Long)
         fun getVisibleRowCount(): Int
+        fun refreshView()
     }
 
     interface Presenter {
@@ -53,5 +54,6 @@ interface FilterBoiContract {
         fun setContent(fromIndex: Int)
         fun importLog(file: Path)
         fun getCurrentLines(): Int
+        fun onResize()
     }
 }
