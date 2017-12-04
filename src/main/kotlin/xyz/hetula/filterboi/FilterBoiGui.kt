@@ -31,7 +31,5 @@ import javafx.application.Application
  * @version 23.8.2017.
  */
 fun main(args: Array<String>) {
-    FilterBoi.initialize()
     Application.launch(FilterBoiFx::class.java)
-    FilterBoi.release()
 }

@@ -25,6 +25,8 @@
 package xyz.hetula.filterboi
 
 import javafx.application.Platform
+import javafx.scene.input.ScrollEvent
+import java.nio.charset.Charset
 import java.nio.file.Path
 
 /**
@@ -34,34 +36,43 @@ import java.nio.file.Path
 class FilterBoiPresenter(private val view: FilterBoiContract.View,
                          private val window: FilterBoiContract.Window) : FilterBoiContract.Presenter {
     private val title = "Filter Boi"
+    private val filterBoi = FilterBoi()
 
     init {
         window.setTitle(title)
     }
 
+    override fun detach() {
+        filterBoi.release()
+    }
+
     override fun setContent(fromIndex: Int) {
         view.clearText()
         val rows = view.getVisibleRowCount()
-        FilterBoi.queryText(fromIndex, rows) {
+        filterBoi.queryText(fromIndex, rows) {
             view.appendText(it)
         }
         view.showScrollBar(getCurrentLines() > rows)
     }
 
-    override fun importLog(file: Path) {
-        FilterBoi.loadFile(file) {
+    override fun importLog(file: Path, encoding: Charset) {
+        filterBoi.loadFile(file, encoding) {
             window.setTitle("${file.toAbsolutePath()} - $title")
             setViewInfo()
             setContent(0)
         }
     }
 
+    override fun saveLog(toPath: Path) {
+        filterBoi.saveLog(toPath)
+    }
+
     override fun getCurrentLines(): Int {
-        return FilterBoi.getCurrentLines()
+        return filterBoi.getCurrentLines()
     }
 
     override fun doSearch(filter: Filter) {
-        FilterBoi.filter(filter) {
+        filterBoi.filter(filter) {
             setViewInfo()
             setContent(0)
         }
@@ -73,10 +84,19 @@ class FilterBoiPresenter(private val view: FilterBoiContract.View,
         }
     }
 
+    override fun onScroll(scrollEvent: ScrollEvent) {
+        when (scrollEvent.textDeltaYUnits) {
+            ScrollEvent.VerticalTextScrollUnits.NONE -> view.scrollPixels(scrollEvent.deltaY)
+            ScrollEvent.VerticalTextScrollUnits.LINES -> view.scrollLines(scrollEvent.textDeltaY)
+            ScrollEvent.VerticalTextScrollUnits.PAGES -> view.scrollPages(scrollEvent.textDeltaY)
+            else -> System.out.println("Null event? $scrollEvent")
+        }
+    }
+
     private fun setViewInfo() {
-        val lines = FilterBoi.getCurrentLines()
+        val lines = filterBoi.getCurrentLines()
         view.setLines(lines)
-        view.setSearchTook(FilterBoi.lastSearchDur)
+        view.setSearchTook(filterBoi.lastSearchDur)
         view.resetScrollBar()
         view.setScrollBar(lines)
     }

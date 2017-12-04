@@ -50,6 +50,8 @@ class FilterBoiFx : Application() {
         val scene = Scene(root, 1024.0, 768.0)
         scene.stylesheets.add(javaClass.getResource("/boi.css").toExternalForm())
 
+        primaryStage.setOnHidden { controller.presenter.detach() }
+
         primaryStage.scene = scene
         primaryStage.show()
     }

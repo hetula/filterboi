@@ -24,7 +24,9 @@
 
 package xyz.hetula.filterboi
 
+import javafx.scene.input.ScrollEvent
 import javafx.stage.Stage
+import java.nio.charset.Charset
 import java.nio.file.Path
 
 /**
@@ -47,13 +49,19 @@ interface FilterBoiContract {
         fun setSearchTook(ms: Long)
         fun getVisibleRowCount(): Int
         fun refreshView()
+        fun scrollPixels(pixels: Double)
+        fun scrollLines(lines: Double)
+        fun scrollPages(pages: Double)
     }
 
     interface Presenter {
+        fun detach()
         fun doSearch(filter: Filter)
         fun setContent(fromIndex: Int)
-        fun importLog(file: Path)
+        fun importLog(file: Path, encoding: Charset)
         fun getCurrentLines(): Int
         fun onResize()
+        fun onScroll(scrollEvent: ScrollEvent)
+        fun saveLog(toPath: Path)
     }
 }

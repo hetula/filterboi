@@ -26,8 +26,10 @@ package xyz.hetula.filterboi
 
 import javafx.application.Platform
 import java.io.IOException
+import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
@@ -35,7 +37,7 @@ import java.util.concurrent.TimeUnit
  * @author Tuomo Heino
  * @version 23.8.2017.
  */
-object FilterBoi {
+class FilterBoi {
     private val taskQueue = Executors.newSingleThreadExecutor()
     private val originalContent: MutableList<String> = ArrayList()
     private val curFilteredContent: MutableList<String> = ArrayList()
@@ -55,12 +57,12 @@ object FilterBoi {
                 .forEach { consumer(it) }
     }
 
-    fun loadFile(file: Path, callback: () -> Unit) {
+    fun loadFile(file: Path, encoding: Charset, callback: () -> Unit) {
         taskQueue.submit {
             println("Reading Contents!")
             originalContent.clear()
             curFilteredContent.clear()
-            readLines(file) {
+            readLines(file, encoding) {
                 originalContent.add(it)
                 println("Lines ${originalContent.size}")
             }
@@ -68,14 +70,17 @@ object FilterBoi {
             curFilteredContent.addAll(originalContent)
             doFiltering(filter, curFilteredContent)
             Platform.runLater {
-
                 callback()
             }
         }
     }
 
-    fun initialize() {
-        println("FilterBoi Ready to Rumble!")
+    fun saveLog(toPath: Path) {
+        val saveContent = ArrayList(curFilteredContent)
+        taskQueue.submit {
+            println("Saving to ${toPath.toAbsolutePath()}")
+            Files.write(toPath, saveContent, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)
+        }
     }
 
     fun release() {
@@ -110,13 +115,13 @@ object FilterBoi {
         })
     }
 
-    private fun readLines(file: Path, consumer: (String) -> Unit) {
+    private fun readLines(file: Path, encoding: Charset, consumer: (String) -> Unit) {
         if (!Files.exists(file)) {
             println("Path ${file.toAbsolutePath()} doesn't exist!")
             return
         }
         println("Reading contents of ${file.toAbsolutePath()}")
-        val reader = Files.newBufferedReader(file)
+        val reader = Files.newBufferedReader(file, encoding)
         try {
             reader.lines().forEach { consumer(it) }
         } catch (ex: IOException) {

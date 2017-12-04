@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollBar?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 
 <!--
   ~ MIT License
@@ -30,39 +37,38 @@
   ~ SOFTWARE.
   -->
 
-<?import javafx.geometry.Insets?>
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="xyz.hetula.filterboi.FilterBoiView"
-            prefHeight="768.0" prefWidth="1024.0">
+<BorderPane prefHeight="768.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="xyz.hetula.filterboi.FilterBoiView">
     <top>
-        <HBox spacing="4.0" alignment="CENTER_LEFT">
+        <HBox alignment="CENTER_LEFT" spacing="4.0">
             <padding>
-                <Insets topRightBottomLeft="4.0"/>
+                <Insets topRightBottomLeft="4.0" />
             </padding>
-            <TextField fx:id="txtFilter" promptText="Filter..." prefColumnCount="32"/>
-            <CheckBox fx:id="chkNotMatching" text="Not matching" onAction="#onNotMatchingClick"/>
-            <CheckBox fx:id="chkRegex" text="Regex" onAction="#onRegexClick"/>
-            <Region HBox.hgrow="ALWAYS"/>
-            <Button text="Import" onAction="#onImportClick"/>
+            <TextField fx:id="txtFilter" prefColumnCount="32" promptText="Filter..." />
+            <Button mnemonicParsing="false" onAction="#onAllFilters" text="..." />
+            <CheckBox fx:id="chkNotMatching" onAction="#onNotMatchingClick" text="Not matching" />
+            <CheckBox fx:id="chkRegex" onAction="#onRegexClick" text="Regex" />
+            <Region HBox.hgrow="ALWAYS" />
+            <ComboBox fx:id="cbEncoding" prefWidth="150.0" />
+            <Button mnemonicParsing="false" onAction="#onSaveLog" text="Save" />
+            <Button onAction="#onImportClick" text="Import" />
         </HBox>
     </top>
 
     <center>
         <BorderPane>
             <center>
-                <TextArea fx:id="logArea" editable="false"/>
+                <TextArea fx:id="logArea" editable="false" />
             </center>
             <right>
-                <ScrollBar fx:id="logScrollBar" visible="false" orientation="VERTICAL" max="1.0"/>
+                <ScrollBar fx:id="logScrollBar" max="1.0" orientation="VERTICAL" visible="false" />
             </right>
         </BorderPane>
     </center>
 
     <bottom>
         <ToolBar>
-            <Label fx:id="lblLines"/>
-            <Label fx:id="lblSearchTime"/>
+            <Label fx:id="lblLines" />
+            <Label fx:id="lblSearchTime" />
         </ToolBar>
     </bottom>
 </BorderPane>
